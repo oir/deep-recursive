@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
   LookupTable *lt = new LookupTable();
   cout << "Loading word vectors..." << flush;
   // i used 300d word2vec in my own experiments.
-  lt->load("vectors.6B.50d.txt", 400000, 50, true);
+  lt->load("glove.6B.50d.txt", 400000, 50, true);
   cout << " Done." << endl;
   Node::LT = lt;
 

@@ -67,6 +67,7 @@ void LookupTable::clear() {
 
 void LookupTable::load(string fname, uint n, uint d, bool noUnknown) {
   ifstream in(fname.c_str());
+  assert(in.is_open());
   string line;
   if (noUnknown) n++;
   data = MatrixXd(d,n);
