@@ -17,10 +17,22 @@
 using namespace Eigen;
 using namespace std;
 
+VectorXd relu(const VectorXd &x) {
+  return x.array().max(0);
+}
+
+VectorXd relup(const VectorXd &y) {
+  return (y.array() > 0).cast<double>();
+}
+
 VectorXd softmax(const VectorXd &x) {
   double m = x.maxCoeff();
   VectorXd v = (x.array() - m).exp();
   return v.array() / v.sum();
+}
+
+VectorXd smxntp(const VectorXd &y, const VectorXd &r) {
+  return y-r;
 }
 
 double str2double(const string& s) {

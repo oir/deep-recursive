@@ -11,7 +11,7 @@
 #define layers 3
 #define MAXEPOCH 200
 #define MINIBATCH 20
-#define NORMALIZE true
+#define NORMALIZE true // relevant only with momentum
 #define ADAGRAD true // adagrad or momentum
 
 #define WI true // initialize W as 0.5*I
@@ -20,7 +20,7 @@
 using namespace std;
 using namespace Eigen;
 
-double DROP = 0.3;
+double DROP = 0.1;
 
 Matrix<double, -1, 1> dropout(Matrix<double, -1, 1> x, double p=DROP) {
   for (uint i=0; i<x.size(); i++) {
@@ -30,27 +30,8 @@ Matrix<double, -1, 1> dropout(Matrix<double, -1, 1> x, double p=DROP) {
   return x;
 }
 
-VectorXd g(const VectorXd& x) {
-  return softmax(x);
-}
-
-VectorXd gp(const VectorXd& y) {
-  return y.array() * (1-y.array());
-}
-
-VectorXd f(const VectorXd& x) {
-  VectorXd v = x; // rectifier
-  for (uint i=0; i<x.size(); i++) if (v(i) < 0)
-    v(i) = 0;
-  return v;
-}
-
-VectorXd fp(const VectorXd& y) {
-  VectorXd v = VectorXd::Ones(y.size());  // rectifier
-  for (uint i=0; i<y.size(); i++) if (y(i) <= 0)
-    v(i) = 0;
-  return v;
-}
+VectorXd (*f)(const VectorXd& x) = &relu;
+VectorXd (*fp)(const VectorXd& y) = &relup;
 
 class Node {
   public:
@@ -197,7 +178,7 @@ void Node::forward(bool test) {
     left->forward(test);
     right->forward(test);
   } else {
-    if (x[0].size() != 300)
+    if (x[0].size() != nx)
       x[0] = (*LT)[word]; // don't have to repeat this if no finetuning
   }
 
@@ -221,7 +202,7 @@ void Node::forward(bool test) {
   VectorXd v = c[0];
   for (uint l=layers-1; l<layers; l++)
     v += U(l)*x[l];
-  y = g(v);
+  y = softmax(v);
 }
 
 void Node::backward() {
@@ -229,8 +210,7 @@ void Node::backward() {
   for (uint l=0; l<layers; l++)
     dx[l].noalias() += la*x[l];
 
-  VectorXd delta = y-r;
-  VectorXd gpyd = gp(y).cwiseProduct(delta);
+  VectorXd gpyd = smxntp(y,r); 
   for (uint l=layers-1; l<layers; l++) {
     dx[l].noalias() += U(l).transpose() * gpyd;
     U(l,1).noalias() += gpyd * x[l].transpose();

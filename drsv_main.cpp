@@ -16,7 +16,10 @@ int main(int argc, char** argv) {
   readTrees(test, "trees/test.txt");
 
   LookupTable *lt = new LookupTable();
-  lt->load("/home/oirsoy/googlenews-mikolov-300", 200000, 300, true);
+  cout << "Loading word vectors..." << flush;
+  // i used 300d word2vec in my own experiments.
+  lt->load("vectors.6B.50d.txt", 400000, 50, true);
+  cout << " Done." << endl;
   Node::LT = lt;
 
   if (ADAGRAD)
@@ -26,7 +29,7 @@ int main(int argc, char** argv) {
   Node::la = 0.0001;
   Node::mr = 0.9;
 
-  Node::nx = 300;
+  Node::nx = 50;
   Node::nh = 50;
   Node::ny = 5;
 
